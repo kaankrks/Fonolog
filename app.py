@@ -3,10 +3,11 @@ import yfinance as yf
 import pandas as pd
 import plotly.graph_objects as go
 
-# Sayfa Ayarları & FVT Dark Tema Stili
+# Sayfa Ayarları
 st.set_page_config(page_title="Fonolog - Fon ve Piyasa Terminali", page_icon="📈", layout="wide")
 
-st.markdown("""
+# FVT Dark Tema Stili (Hatasız HTML/CSS Enjeksiyonu)
+custom_css = """
 <style>
     .stApp { background-color: #12131C; color: #E0E0E0; }
     .stMetric { background-color: #181925; padding: 12px; border-radius: 8px; border: 1px solid #282A3A; }
@@ -15,7 +16,8 @@ st.markdown("""
     .green-text { color: #00E676; font-weight: bold; }
     .red-text { color: #FF5252; font-weight: bold; }
 </style>
-""", unsafe_style_allow_html=True)
+"""
+st.write(custom_css, unsafe_allow_html=True)
 
 # Canlı Piyasa Verileri
 @st.cache_data(ttl=60)
@@ -82,12 +84,12 @@ if sayfa == "🌐 Günün Özeti":
         ]
         for f in sample_funds:
             color = "green-text" if f['tahmin'] >= 0 else "red-text"
-            st.markdown(f"""
+            st.write(f"""
             <div class="card">
                 <b>{f['kod']}</b> - <small>{f['ad']}</small><br>
                 AI Tahmin: <span class="{color}">%{f['tahmin']:.2f}</span>
             </div>
-            """, unsafe_style_allow_html=True)
+            """, unsafe_allow_html=True)
 
     st.subheader("🔥 Günün Enleri")
     tab1, tab2 = st.tabs(["Hisseler", "Fonlar"])
@@ -161,7 +163,7 @@ elif sayfa == "🔥 Popüler Fon Tahminleri":
         color_class = "green-text" if tahmin_val >= 0 else "red-text"
         
         with cols_fon[idx % 3]:
-            st.markdown(f"""
+            st.write(f"""
             <div class="card">
                 <div style="display:flex; justify-content:space-between; align-items:center;">
                     <h4>{fon_kodu}</h4>
@@ -173,4 +175,4 @@ elif sayfa == "🔥 Popüler Fon Tahminleri":
                 <small>• AKBNK: %15.0 (Etki: +0.20%)</small><br>
                 <small>• YKBNK: %10.0 (Etki: -0.10%)</small>
             </div>
-            """, unsafe_style_allow_html=True)
+            """, unsafe_allow_html=True)
