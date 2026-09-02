@@ -6,24 +6,42 @@ import plotly.graph_objects as go
 # Sayfa Ayarları
 st.set_page_config(page_title="Fonolog - Fon ve Piyasa Terminali", page_icon="📈", layout="wide")
 
-# FVT Dark Tema Stili (Hatasız HTML/CSS Enjeksiyonu)
+# Tam Koyu Tema (Sidebar Dâhil) CSS
 custom_css = """
 <style>
-    .stApp { background-color: #12131C; color: #E0E0E0; }
-    .stMetric { background-color: #181925; padding: 12px; border-radius: 8px; border: 1px solid #282A3A; }
-    div[data-testid="stSidebar"] { background-color: #181925; border-right: 1px solid #282A3A; }
-    .card { background-color: #181925; border-radius: 10px; padding: 15px; border: 1px solid #282A3A; margin-bottom: 15px; }
-    .green-text { color: #00E676; font-weight: bold; }
-    .red-text { color: #FF5252; font-weight: bold; }
+    /* Ana Gövde ve Sidebar Arka Planı */
+    .stApp, div[data-testid="stSidebar"] { 
+        background-color: #0E0F17 !important; 
+        color: #E0E0E0 !important; 
+    }
+    div[data-testid="stSidebar"] * {
+        color: #E0E0E0 !important;
+    }
+    /* Kartlar ve Metrikler */
+    .stMetric { 
+        background-color: #181925 !important; 
+        padding: 12px; 
+        border-radius: 8px; 
+        border: 1px solid #282A3A; 
+    }
+    .card { 
+        background-color: #181925; 
+        border-radius: 10px; 
+        padding: 15px; 
+        border: 1px solid #282A3A; 
+        margin-bottom: 15px; 
+    }
+    .green-text { color: #00E676 !important; font-weight: bold; }
+    .red-text { color: #FF5252 !important; font-weight: bold; }
 </style>
 """
 st.write(custom_css, unsafe_allow_html=True)
 
-# Canlı Piyasa Verileri
+# Canlı Piyasa Verileri (BIST 100 Düzeltmeli)
 @st.cache_data(ttl=60)
 def get_market_data():
     tickers = {
-        "BIST 100": "^XU100",
+        "BIST 100": "XU100.IS",
         "BIST 30": "XU030.IS",
         "USD/TRY": "USDTRY=X",
         "EUR/TRY": "EURTRY=X",
@@ -33,7 +51,7 @@ def get_market_data():
     data = {}
     for name, symbol in tickers.items():
         try:
-            df = yf.Ticker(symbol).history(period="2d")
+            df = yf.Ticker(symbol).history(period="5d")
             if len(df) >= 2:
                 last = df['Close'].iloc[-1]
                 prev = df['Close'].iloc[-2]
@@ -67,10 +85,13 @@ if sayfa == "🌐 Günün Özeti":
     with col_chart:
         st.subheader("📊 BİST 100 Anlık Trend")
         try:
-            bist_df = yf.Ticker("^XU100").history(period="1mo")
-            fig = go.Figure(data=[go.Scatter(x=bist_df.index, y=bist_df['Close'], mode='lines', line=dict(color='#00E676', width=2))])
-            fig.update_layout(template="plotly_dark", paper_bgcolor='#181925', plot_bgcolor='#181925', margin=dict(l=10, r=10, t=10, b=10), height=300)
-            st.plotly_chart(fig, use_container_width=True)
+            bist_df = yf.Ticker("XU100.IS").history(period="1mo")
+            if not bist_df.empty:
+                fig = go.Figure(data=[go.Scatter(x=bist_df.index, y=bist_df['Close'], mode='lines', line=dict(color='#00E676', width=2))])
+                fig.update_layout(template="plotly_dark", paper_bgcolor='#181925', plot_bgcolor='#181925', margin=dict(l=10, r=10, t=10, b=10), height=300)
+                st.plotly_chart(fig, use_container_width=True)
+            else:
+                st.info("BIST verisi güncelleniyor...")
         except:
             st.info("Grafik yükleniyor...")
             
@@ -111,7 +132,6 @@ elif sayfa == "💼 Portföyüm":
             {"Varlık": "THYAO", "Tür": "Hisse Senedi", "Adet": 150.0, "Maliyet": 280.0, "GuncelFiyat": 298.50}
         ]
 
-    # İşlem Ekleme Formu
     with st.expander("➕ Yeni İşlem Ekle (Al / Sat)", expanded=False):
         col_a, col_b, col_c, col_d = st.columns(4)
         v_ad = col_a.text_input("Varlık Kodu (Örn: DFI, THYAO)")
